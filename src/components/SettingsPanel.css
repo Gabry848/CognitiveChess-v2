@@ -1,0 +1,137 @@
+/* Styles for the Settings Panel (Modal) */
+.settings-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Sfondo overlay più scuro */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  padding: 20px; /* Padding per evitare che il pannello tocchi i bordi su schermi piccoli */
+  backdrop-filter: blur(5px); /* Effetto blur per lo sfondo */
+}
+
+.settings-panel {
+  background-color: #ffffff;
+  padding: 30px 35px; /* Padding aumentato */
+  border-radius: 12px; /* Bordi più arrotondati */
+  /* box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); Ombra più pronunciata e morbida */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05); /* Ombra più moderna e sottile */
+  width: 100%; /* Responsive width */
+  max-width: 480px; /* Larghezza massima aumentata leggermente */
+  animation: fadeInScale 0.3s ease-out forwards;
+  transition: box-shadow 0.3s ease-in-out; /* Transizione per future modifiche */
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.settings-panel h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 1.8em; /* Dimensione font titolo aumentata */
+  font-weight: 600; /* Titolo leggermente più bold */
+  text-align: center;
+  color: #333; /* Colore titolo più scuro per contrasto */
+}
+
+.form-group {
+  margin-bottom: 22px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500; /* Peso font label */
+  font-size: 0.95em;
+  color: #454545;
+}
+
+.form-group input[type="password"],
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+  padding: 12px 15px; /* Padding input aumentato */
+  border: 1px solid #ced4da; /* Bordo input più standard e visibile */
+  border-radius: 8px; /* Bordi input più arrotondati */
+  box-sizing: border-box;
+  font-size: 1em;
+  color: #212529; /* Colore testo più scuro per miglior contrasto */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input[type="password"]:focus,
+.form-group input[type="text"]:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+/* Stile per il select per farlo assomigliare di più a un input moderno */
+.form-group select {
+  appearance: none; /* Rimuove lo stile di default del browser */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px auto;
+  padding-right: 40px; /* Spazio per la freccia custom */
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px; /* Spazio tra bottoni aumentato */
+  margin-top: 30px; /* Aumentato per più spazio sopra i bottoni */
+}
+
+.settings-actions button {
+  /* padding: 10px 22px; Padding bottoni leggermente aggiustato */
+  padding: 12px 24px; /* Padding bottoni aumentato per un target migliore */
+  border-radius: 8px; /* Bordi bottoni più arrotondati */
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-size: 0.95em;
+  font-weight: 500;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.settings-actions button:active {
+    transform: translateY(1px);
+}
+
+.settings-actions .button-primary {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.settings-actions .button-primary:hover {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+.settings-actions button:not(.button-primary) {
+  background-color: #f8f9fa;
+  color: #343a40;
+  border-color: #ced4da;
+}
+
+.settings-actions button:not(.button-primary):hover {
+  background-color: #e2e6ea;
+  /* border-color: #baccbd; */
+  border-color: #adb5bd; /* Colore bordo più standard per hover */
+}

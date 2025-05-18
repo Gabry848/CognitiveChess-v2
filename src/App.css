@@ -1,0 +1,371 @@
+/* filepath: e:\Projects\CognitiveChess\src\App.css */
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f0f0f0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  width: 90vw;
+  max-width: 1200px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.board-column {
+  flex: 2; /* La scacchiera occupa più spazio */
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #e9e9e9; /* Sfondo leggermente diverso per la colonna della scacchiera */
+}
+
+.chat-column {
+  flex: 1; /* La chat occupa meno spazio */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ddd;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  font-size: 1.5em;
+  margin: 0;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+}
+
+.api-key-status-icon {
+  margin-right: 10px;
+  font-size: 1.2em; /* Leggermente più piccolo dell'ingranaggio */
+  color: #28a745; /* Verde per indicare che è attiva */
+}
+
+.settings-icon {
+  font-size: 1.5em;
+  cursor: pointer;
+  /* position: relative; */ /* Non strettamente necessario qui, il container gestisce il posizionamento */
+  padding: 5px; /* Aggiunge un po' di area cliccabile */
+  border-radius: 50%; /* Rende l'area di hover/click più circolare */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.settings-icon:hover {
+  background-color: #e0e0e0; /* Leggero sfondo al passaggio del mouse sull'icona */
+}
+
+/* Contenitore per il menu dell'ingranaggio per posizionamento */
+.gear-menu-container {
+  position: relative;
+  display: inline-block; /* O flex, a seconda del layout desiderato */
+}
+
+.gear-menu {
+  position: absolute;
+  top: calc(100% + 5px); /* Appare sotto l'icona con un piccolo spazio */
+  right: 0; /* Allineato a destra dell'icona */
+  background-color: white;
+  border: 1px solid #ddd; /* Bordo leggermente più chiaro */
+  border-radius: 6px; /* Arrotondamento leggermente aumentato */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Ombra più morbida */
+  z-index: 1000; /* Assicura che sia sopra altri elementi */
+  min-width: 180px; /* Larghezza minima leggermente aumentata */
+  padding: 6px 0; /* Padding verticale interno al menu */
+  overflow: hidden; /* Assicura che i figli rispettino il border-radius */
+}
+
+.gear-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 20px; /* Padding orizzontale aumentato per più spazio */
+  text-align: left;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 0.9em; /* Leggermente ridotto per un look più fine */
+  color: #333; /* Colore del testo esplicito */
+  transition: background-color 0.15s ease-in-out;
+}
+
+.gear-menu button:hover {
+  background-color: #f5f5f5; /* Sfondo hover leggermente più chiaro */
+  color: #000; /* Testo più scuro su hover per contrasto */
+}
+
+/* Stili per il pannello impostazioni (modal) */
+.settings-panel-overlay {
+  position: fixed; /* Overlay sull'intera pagina */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Sfondo semi-trasparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001; /* Sopra il gear-menu se entrambi fossero visibili */
+}
+
+.settings-panel {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 450px; /* Larghezza massima del pannello */
+}
+
+.settings-panel h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.6em;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-group input[type="password"],
+.form-group input[type="text"], /* Se si aggiungessero altri input */
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Include padding e border nel width/height */
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end; /* Allinea i bottoni a destra */
+  gap: 10px; /* Spazio tra i bottoni */
+  margin-top: 25px;
+}
+
+.settings-actions button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.settings-actions .button-primary {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.settings-actions .button-primary:hover {
+  background-color: #0056b3;
+}
+
+.settings-actions button:not(.button-primary) {
+  background-color: #f0f0f0;
+  color: #333;
+  border-color: #ccc;
+}
+
+.settings-actions button:not(.button-primary):hover {
+  background-color: #e0e0e0;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  min-height: 300px; /* Aumentata altezza minima */
+  display: flex; /* Per allineare i messaggi in colonna */
+  flex-direction: column; /* Messaggi uno sotto l'altro */
+}
+
+.message {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 15px; /* Bolle più arrotondate */
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.message-user {
+  background-color: #007bff; /* Blu per l'utente */
+  color: white;
+  align-self: flex-end; /* Allinea a destra */
+  border-bottom-right-radius: 5px; /* Angolo meno arrotondato per la coda */
+}
+
+.message-bot {
+  background-color: #e9e9e9; /* Grigio chiaro per il bot */
+  color: #333;
+  align-self: flex-start; /* Allinea a sinistra */
+  border-bottom-left-radius: 5px; /* Angolo meno arrotondato per la coda */
+}
+
+.message-system {
+  background-color: #f0f0f0;
+  color: #555;
+  align-self: center; /* Centrato per i messaggi di sistema */
+  font-style: italic;
+  font-size: 0.9em;
+  width: auto; /* Larghezza basata sul contenuto */
+  max-width: 90%;
+  text-align: center;
+}
+
+.sender-label {
+  font-weight: bold;
+  margin-right: 6px;
+  display: block; /* Nome su una riga separata o prima del testo */
+  margin-bottom: 2px;
+  font-size: 0.85em;
+}
+
+/* Nascondiamo il label per l'utente per un look più pulito */
+.message-user .sender-label {
+  /* Potrebbe essere nascosto o formattato diversamente se si preferisce non mostrarlo */
+  /* display: none; */ 
+  color: #d1e7ff; /* Colore più chiaro se visibile */
+}
+
+.message-bot .sender-label {
+  color: #555;
+}
+
+.message-system .sender-label {
+  display: none; /* I messaggi di sistema non hanno bisogno di un'etichetta "Sistema" esplicita */
+}
+
+.message-text {
+  display: inline; /* Testo a fianco del label se non è block */
+}
+
+.message-move {
+  font-size: 0.9em;
+  color: #777;
+  margin-left: 5px;
+}
+
+.message-user .message-move {
+  color: #cce5ff;
+}
+
+.message-bot .message-move {
+  color: #666;
+}
+
+.chat-input {
+  display: flex;
+}
+
+.chat-input input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 20px; /* Input più arrotondato */
+  margin-right: 8px;
+}
+
+.chat-input button {
+  padding: 10px 15px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 20px; /* Bottone più arrotondato */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.chat-input button:hover {
+  background-color: #0056b3;
+}
+
+.chat-input button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.thinking-indicator {
+  padding: 5px 10px;
+  font-style: italic;
+  color: #555;
+  text-align: center;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+/* Stile per centrare la scacchiera se è più piccola della colonna */
+/* react-chessboard crea un div interno, quindi applichiamo lo stile a quello se necessario */
+#BasicBoard > div {
+  width: 400px; /* Esempio, potrebbe essere necessario aggiustarlo o renderlo dinamico */
+  height: 400px; /* Esempio */
+}
