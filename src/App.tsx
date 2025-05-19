@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
 import './App.css';
+import './components/SettingsPanel.css'; // Importa il CSS moderno del pannello impostazioni
+import './components/Chat.css'; // Importa lo stile corretto della chat
 import { getDeepseekMove, getDeepseekChatResponse, Difficulty } from './deepseekClient';
 
 // ...interfaccia Message...
@@ -74,20 +76,81 @@ function App() {
   }, [messages]);
 
   const addMessage = (text: string, sender: Message['sender'], moveSan?: string) => {
-    setMessages(prev => [...prev, { id: Date.now().toString(), text, sender, moveSan }]);
+    setMessages(prev => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        text,
+        sender,
+        moveSan
+      }
+    ]);
   };
 
   // ...handleDeepseekResponse...
-  async function handleDeepseekResponse(playerMoveSan: string) {
+  async function handleDeepseekResponse(playerMoveSan: string, fen: string, lastBotError?: string) {
     if (!apiKey || apiKey === PLACEHOLDER_API_KEY) {
       addMessage("API Key di Deepseek non configurata. Configurala nelle impostazioni (⚙️).", "system");
       return;
     }
-    setIsBotThinking(true);
-    const deepseekResponse = await getDeepseekMove(game.fen(), playerMoveSan, difficulty, apiKey);
+    // Calcola la lista di tutti i pezzi sulla scacchiera dalla FEN
+    const getAllPieces = (fen: string) => {
+      const board = fen.split(' ')[0];
+      const pieceMap: { [key: string]: string } = {
+        'P': 'pedone bianco', 'N': 'cavallo bianco', 'B': 'alfiere bianco', 'R': 'torre bianca', 'Q': 'donna bianca', 'K': 're bianco',
+        'p': 'pedone nero', 'n': 'cavallo nero', 'b': 'alfiere nero', 'r': 'torre nera', 'q': 'donna nera', 'k': 're nero'
+      };
+      const squares = board.replace(/\//g, '').split('');
+      const pieces: string[] = [];
+      let file = 0, rank = 8;
+      for (const c of squares) {
+        if (/[1-8]/.test(c)) {
+          file += parseInt(c);
+        } else {
+          const col = String.fromCharCode('a'.charCodeAt(0) + file);
+          if (pieceMap[c]) {
+            pieces.push(`${pieceMap[c]} in ${col}${rank}`);
+          }
+          file++;
+        }
+        if (file >= 8) { file = 0; rank--; }
+      }
+      return pieces;
+    };
+    const allPieces = getAllPieces(fen);
+    // Descrizione della bravura in base alla difficoltà
+    let skillDescription = '';
+    if (difficulty === 'facile') skillDescription = 'Gioca come un principiante: cerca di commettere errori e non giocare sempre le mosse migliori.';
+    else if (difficulty === 'media') skillDescription = 'Gioca come un giocatore intermedio: alterna buone mosse a qualche imprecisione.';
+    else if (difficulty === 'difficile') skillDescription = 'Gioca come un esperto: cerca di trovare sempre le mosse migliori e sfrutta ogni errore dell’avversario.';
+    // Prompt arricchito con la lista di tutti i pezzi, promemoria coordinate, bravura e regole di movimento
+    let extraInfo = `Tutti i pezzi sulla scacchiera (tipo e posizione): ${allPieces.join(', ')}. Ricorda: la scacchiera va da a1 (in basso a sinistra) a h8 (in alto a destra), colonne a-h e righe 1-8. ${skillDescription}\nRegole di movimento dei pezzi: 
+- I pedoni si muovono in avanti di una casa (o due dalla posizione iniziale), catturano in diagonale e promuovono all'ultima traversa.
+- I cavalli si muovono a L (due in una direzione e una perpendicolare), possono saltare altri pezzi.
+- Gli alfieri si muovono in diagonale di qualsiasi numero di case.
+- Le torri si muovono in orizzontale o verticale di qualsiasi numero di case.
+- La donna si muove in orizzontale, verticale o diagonale di qualsiasi numero di case.
+- Il re si muove di una casa in qualsiasi direzione e può arroccare se le condizioni lo permettono.`;
+    if (lastBotError) {
+      // Cerca una mossa UCI nell'errore (es. "Mossa non valida: e7e5")
+      let forbiddenMove = '';
+      const match = lastBotError.match(/([a-h][1-8][a-h][1-8][qrbn]?)/i);
+      if (match) {
+        forbiddenMove = match[1];
+        extraInfo += `\nATTENZIONE: La tua ultima mossa non era valida (${lastBotError}). Non proporre di nuovo la mossa ${forbiddenMove} perché era sbagliata. Scegli una mossa diversa valida per il nero in questa posizione.`;
+      } else {
+        extraInfo += `\nATTENZIONE: La tua ultima mossa non era valida (${lastBotError}). Proponi una nuova mossa valida per il nero in questa posizione.`;
+      }
+    }
+    console.log('[Deepseek] Tutti i pezzi:', allPieces);
+    console.debug('[Deepseek] Chiamo getDeepseekMove con FEN:', fen, 'playerMoveSan:', playerMoveSan, 'difficulty:', difficulty, 'extraInfo:', extraInfo);
+    const deepseekResponse = await getDeepseekMove(fen, playerMoveSan, difficulty, apiKey, extraInfo);
     setIsBotThinking(false);
+    console.log('[Deepseek] Risposta RAW:', deepseekResponse);
+    console.log('[Deepseek] FEN:', fen, 'Ultima mossa utente:', playerMoveSan);
     if (deepseekResponse && deepseekResponse.move) {
-      const gameCopy = new Chess(game.fen());
+      console.log('[Deepseek] Provo ad applicare la mossa:', deepseekResponse.move, 'alla FEN:', fen);
+      const gameCopy = new Chess(fen);
       try {
         const botMove = gameCopy.move(deepseekResponse.move);
         if (botMove) {
@@ -96,13 +159,19 @@ function App() {
           addMessage(`${deepseekResponse.comment}`, "bot", botMove.san);
           checkGameStatus(gameCopy);
         } else {
-          addMessage("Errore: Deepseek ha proposto una mossa non valida.", "system");
+          // Se la mossa non è valida, chiedi a Deepseek di riprovare passando l'errore
+          addMessage("Errore: Deepseek ha proposto una mossa non valida. Riprovo...", "system");
+          console.error('[Deepseek] Mossa non valida:', deepseekResponse.move, 'FEN:', gameCopy.fen());
+          await handleDeepseekResponse(playerMoveSan, fen, `Mossa non valida: ${deepseekResponse.move}`);
         }
       } catch (e) {
-        addMessage("Errore nell'applicare la mossa del bot.", "system");
+        addMessage("Errore nell'applicare la mossa del bot. Riprovo...", "system");
+        console.error('[Deepseek] Eccezione durante gameCopy.move:', e, 'Move:', deepseekResponse.move, 'FEN:', gameCopy.fen());
+        await handleDeepseekResponse(playerMoveSan, fen, `Eccezione: ${e}`);
       }
     } else {
       addMessage("Deepseek non ha fornito una mossa o c'è stato un errore API.", "system");
+      console.error('[Deepseek] Nessuna mossa valida ricevuta:', deepseekResponse);
     }
   }
 
@@ -117,7 +186,9 @@ function App() {
       setGame(gameCopy);
       addMessage(`Mossa: ${move.san}`, "user", move.san);
       if (checkGameStatus(gameCopy)) return true;
-      handleDeepseekResponse(move.san);
+      if (gameCopy.turn() === 'b') {
+        handleDeepseekResponse(move.san, gameCopy.fen());
+      }
       return true;
     } catch (error) {
       return false;
@@ -215,7 +286,7 @@ function App() {
           id="BasicBoard"
           position={fen}
           onPieceDrop={onPieceDrop}
-          boardOrientation={game.turn() === 'b' ? 'black' : 'white'}
+          boardOrientation="white"
           arePiecesDraggable={!isBotThinking && !isGameOver} // Usa la variabile isGameOver
         />
         {/* Il bottone Restart Game è stato spostato nel menu ingranaggio, 
@@ -227,7 +298,7 @@ function App() {
 
       <div className="chat-column">
         <div className="header">
-          <h1>Minimal Chess vs Deepseek</h1>
+            <h1 style={{ color: 'black' }}>Minimal Chess vs Deepseek</h1>
           <div className="header-icons">
             {isApiKeySet && <span className="api-key-status-icon" title="API Key impostata">🔒</span>}
             <div className="gear-menu-container"> {/* Contenitore per posizionamento relativo */}

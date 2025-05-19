@@ -62,21 +62,38 @@
 .form-group input[type="text"],
 .form-group select {
   width: 100%;
-  padding: 12px 15px; /* Padding input aumentato */
-  border: 1px solid #ced4da; /* Bordo input più standard e visibile */
-  border-radius: 8px; /* Bordi input più arrotondati */
+  padding: 14px 18px; /* Più padding per maggiore chiarezza */
+  border: 2px solid #007bff; /* Bordo blu più visibile */
+  border-radius: 8px;
   box-sizing: border-box;
-  font-size: 1em;
-  color: #212529; /* Colore testo più scuro per miglior contrasto */
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-size: 1.08em;
+  color: #212529;
+  background-color: #f8fbff; /* Sfondo più chiaro */
+  font-weight: 500;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input[type="password"]::placeholder,
+.form-group input[type="text"]::placeholder {
+  color: #7da3d8;
+  opacity: 1;
+  font-size: 0.98em;
 }
 
 .form-group input[type="password"]:focus,
 .form-group input[type="text"]:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  border-color: #0056b3;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18);
+  background-color: #eaf3ff;
+}
+
+.form-group label {
+  color: #0056b3;
+  font-size: 1.05em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 /* Stile per il select per farlo assomigliare di più a un input moderno */
