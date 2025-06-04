@@ -1,30 +1,28 @@
 // e:\Projects\CognitiveChess\src\deepseekClient.ts
 
-// ATTENZIONE: Sostituisci 'YOUR_DEEPSEEK_API_KEY_HERE' con la tua vera API Key di Deepseek.
-// ATTENZIONE: Verifica che DEEPSEEK_API_URL sia l'endpoint corretto per il modello che intendi utilizzare.
-const DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY_HERE";
-const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"; // URL API generico, potrebbe necessitare di aggiustamenti
+// ATTENZIONE: Sostituisci 'YOUR_OPENROUTER_API_KEY_HERE' con la tua vera API Key di OpenRouter.
+// ATTENZIONE: Verifica che OPENROUTER_API_URL sia l'endpoint corretto per il modello che intendi utilizzare.
+const OPENROUTER_API_KEY = "YOUR_OPENROUTER_API_KEY_HERE";
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"; // Endpoint OpenRouter
 
-export interface DeepseekResponse {
+export interface OpenRouterResponse {
   move: string; // Formato UCI, es. "e7e5"
   comment: string;
 }
 
 export type Difficulty = "facile" | "media" | "difficile";
 
-export async function getDeepseekMove(
+export async function getOpenRouterMove(
   fen: string,
   lastPlayerMoveSan: string, // Mossa del giocatore in formato SAN
   difficulty: Difficulty,
   apiKey: string | null, // Permette di passare l'API key dinamicamente
   extraInfo?: string // Nuovo parametro opzionale per info aggiuntive
-): Promise<DeepseekResponse | null> {
-  if (!apiKey || apiKey === "YOUR_DEEPSEEK_API_KEY_HERE") {
+): Promise<OpenRouterResponse | null> {
+  if (!apiKey || apiKey === "YOUR_OPENROUTER_API_KEY_HERE") {
     console.warn(
-      "API Key di Deepseek non configurata o placeholder utilizzato. La chiamata API verrà saltata."
+      "API Key di OpenRouter non configurata o placeholder utilizzato. La chiamata API verrà saltata."
     );
-    // Simula una risposta per testare il flusso senza API key
-    // return { move: "e2e4", comment: "Risposta simulata (API Key mancante)." };
     return null;
   }
 
@@ -85,38 +83,37 @@ Esempio commento valido:
 "Neutralizza la minaccia di forchetta in e5 rinforzando il centro. Piano: preparare contrattacco sull'ala di donna con ...b5 e ...Ba6"
 
 **Nessun testo extra oltre il JSON. Validazione automatica per formato UCI.**
+ricorda che nn esiste la mossa con x
+ricorda che i pedoni si muovono in avanti e in diagonale per mangiare
 `.trim();
 
   try {
-    const response = await fetch(DEEPSEEK_API_URL, {
+    const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat", // Assicurati che sia il modello corretto
+        "Authorization": `Bearer ${apiKey}`,
+         // Cambia con il tuo dominio se richiesto da OpenRouter
+          "X-Title": "CognitiveChess"
+              },
+              body: JSON.stringify({
+          model: "deepseek-chat", // Modello DeepSeek su OpenRouter
         messages: [
-          // { role: "system", content: "Sei un motore scacchistico AI che risponde solo in JSON." },
           { role: "user", content: prompt },
         ],
-        // Alcune API (come OpenAI) supportano una modalità JSON per garantire l'output.
-        // Verifica se Deepseek ha un parametro simile, altrimenti il parsing del JSON dal testo è cruciale.
-        // response_format: { type: "json_object" }, // Se supportato da Deepseek
-        temperature: 0.5, // Aggiusta per creatività vs determinismo
+        response_format: { type: "json_object" },
+        temperature: 0.45,
       }),
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("Errore dalla API Deepseek:", response.status, errorBody);
+      console.error("Errore dalla API OpenRouter:", response.status, errorBody);
       return null;
     }
 
     const data = await response.json();
 
-    // La struttura della risposta può variare.
-    // Spesso, il contenuto JSON è in data.choices[0].message.content
     if (
       data.choices &&
       data.choices[0] &&
@@ -124,11 +121,9 @@ Esempio commento valido:
       data.choices[0].message.content
     ) {
       try {
-        // Il contenuto potrebbe essere una stringa JSON che necessita di un ulteriore parsing
         const content = data.choices[0].message.content;
-        // Rimuovi eventuali ```json ... ``` markdown che l'LLM potrebbe aggiungere
         const cleanedContent = content.replace(/^```json\n|\n```$/g, "");
-        const parsedContent: DeepseekResponse = JSON.parse(cleanedContent);
+        const parsedContent: OpenRouterResponse = JSON.parse(cleanedContent);
 
         if (
           typeof parsedContent.move === "string" &&
@@ -137,14 +132,14 @@ Esempio commento valido:
           return parsedContent;
         } else {
           console.error(
-            "Risposta Deepseek JSON non valida dopo il parsing:",
+            "Risposta OpenRouter JSON non valida dopo il parsing:",
             parsedContent
           );
           return null;
         }
       } catch (parseError) {
         console.error(
-          "Errore nel parsing della risposta JSON da Deepseek:",
+          "Errore nel parsing della risposta JSON da OpenRouter:",
           parseError
         );
         console.error("Contenuto ricevuto:", data.choices[0].message.content);
@@ -152,27 +147,26 @@ Esempio commento valido:
       }
     } else {
       console.error(
-        "Struttura della risposta Deepseek non riconosciuta o contenuto mancante:",
+        "Struttura della risposta OpenRouter non riconosciuta o contenuto mancante:",
         data
       );
       return null;
     }
   } catch (error) {
-    console.error("Errore durante la chiamata a Deepseek API:", error);
+    console.error("Errore durante la chiamata a OpenRouter API:", error);
     return null;
   }
 }
 
-export async function getDeepseekChatResponse(
+export async function getOpenRouterChatResponse(
   fen: string,
   userMessage: string,
   apiKey: string | null
 ): Promise<string | null> {
-  if (!apiKey || apiKey === "YOUR_DEEPSEEK_API_KEY_HERE") {
+  if (!apiKey || apiKey === "YOUR_OPENROUTER_API_KEY_HERE") {
     console.warn(
-      "API Key di Deepseek non configurata o placeholder utilizzato per la chat. La chiamata API verrà saltata."
+      "API Key di OpenRouter non configurata o placeholder utilizzato per la chat. La chiamata API verrà saltata."
     );
-    // return "Risposta chat simulata (API Key mancante).";
     return null;
   }
 
@@ -181,27 +175,28 @@ L'utente ti ha chiesto: "${userMessage}".
 Rispondi in modo chiaro e utile come assistente scacchistico.`;
 
   try {
-    const response = await fetch(DEEPSEEK_API_URL, {
-      // DEEPSEEK_API_URL è già definito sopra
+    const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${apiKey}`,
+        "HTTP-Referer": "https://yourapp.com", // Cambia con il tuo dominio se richiesto da OpenRouter
+        "X-Title": "CognitiveChess"
       },
       body: JSON.stringify({
-        model: "deepseek-chat", // Assicurati che sia il modello corretto
+        model: "openai/gpt-4-1106-preview", // ChatGPT-4.1 su OpenRouter
         messages: [
           { role: "system", content: "Sei un utile assistente scacchistico." },
           { role: "user", content: prompt },
         ],
-        temperature: 0.7, // Aggiusta per creatività
+        temperature: 0.2,
       }),
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
       console.error(
-        "Errore dalla API Deepseek (chat):",
+        "Errore dalla API OpenRouter (chat):",
         response.status,
         errorBody
       );
@@ -219,13 +214,13 @@ Rispondi in modo chiaro e utile come assistente scacchistico.`;
       return data.choices[0].message.content.trim();
     } else {
       console.error(
-        "Struttura della risposta Deepseek (chat) non riconosciuta o contenuto mancante:",
+        "Struttura della risposta OpenRouter (chat) non riconosciuta o contenuto mancante:",
         data
       );
       return null;
     }
   } catch (error) {
-    console.error("Errore durante la chiamata a Deepseek API (chat):", error);
+    console.error("Errore durante la chiamata a OpenRouter API (chat):", error);
     return null;
   }
 }

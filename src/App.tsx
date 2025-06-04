@@ -4,7 +4,7 @@ import { Chess } from 'chess.js';
 import './App.css';
 import './components/SettingsPanel.css'; // Importa il CSS moderno del pannello impostazioni
 import './components/Chat.css'; // Importa lo stile corretto della chat
-import { getDeepseekMove, getDeepseekChatResponse, Difficulty } from './deepseekClient';
+import { getOpenRouterMove, getOpenRouterChatResponse, Difficulty } from './deepseekClient';
 
 // ...interfaccia Message...
 interface Message {
@@ -14,7 +14,7 @@ interface Message {
   moveSan?: string;
 }
 
-const PLACEHOLDER_API_KEY = 'YOUR_DEEPSEEK_API_KEY_HERE';
+const PLACEHOLDER_API_KEY = 'YOUR_OPENROUTER_API_KEY_HERE';
 
 function App() {
   const [fen, setFen] = useState('start');
@@ -88,9 +88,9 @@ function App() {
   };
 
   // ...handleDeepseekResponse...
-  async function handleDeepseekResponse(playerMoveSan: string, fen: string, lastBotError?: string) {
+  async function handleOpenRouterResponse(playerMoveSan: string, fen: string, lastBotError?: string) {
     if (!apiKey || apiKey === PLACEHOLDER_API_KEY) {
-      addMessage("API Key di Deepseek non configurata. Configurala nelle impostazioni (⚙️).", "system");
+      addMessage("API Key di OpenRouter non configurata. Configurala nelle impostazioni (⚙️).", "system");
       return;
     }
     // Calcola la lista di tutti i pezzi sulla scacchiera dalla FEN
@@ -131,6 +131,11 @@ function App() {
 - Le torri si muovono in orizzontale o verticale di qualsiasi numero di case.
 - La donna si muove in orizzontale, verticale o diagonale di qualsiasi numero di case.
 - Il re si muove di una casa in qualsiasi direzione e può arroccare se le condizioni lo permettono.`;
+    // --- AGGIUNTA: segnala a Deepseek se il re nero è sotto scacco ---
+    const tempGame = new Chess(fen);
+    if (tempGame.turn() === 'b' && tempGame.isCheck()) {
+      extraInfo += '\nATTENZIONE: Il re nero è sotto scacco in questa posizione. Trova una mossa che risolva lo scacco!';
+    }
     if (lastBotError) {
       // Cerca una mossa UCI nell'errore (es. "Mossa non valida: e7e5")
       let forbiddenMove = '';
@@ -144,34 +149,27 @@ function App() {
     }
     console.log('[Deepseek] Tutti i pezzi:', allPieces);
     console.debug('[Deepseek] Chiamo getDeepseekMove con FEN:', fen, 'playerMoveSan:', playerMoveSan, 'difficulty:', difficulty, 'extraInfo:', extraInfo);
-    const deepseekResponse = await getDeepseekMove(fen, playerMoveSan, difficulty, apiKey, extraInfo);
+    const openRouterResponse = await getOpenRouterMove(fen, playerMoveSan, difficulty, apiKey, extraInfo);
     setIsBotThinking(false);
-    console.log('[Deepseek] Risposta RAW:', deepseekResponse);
-    console.log('[Deepseek] FEN:', fen, 'Ultima mossa utente:', playerMoveSan);
-    if (deepseekResponse && deepseekResponse.move) {
-      console.log('[Deepseek] Provo ad applicare la mossa:', deepseekResponse.move, 'alla FEN:', fen);
+    if (openRouterResponse && openRouterResponse.move) {
       const gameCopy = new Chess(fen);
       try {
-        const botMove = gameCopy.move(deepseekResponse.move);
+        const botMove = gameCopy.move(openRouterResponse.move);
         if (botMove) {
           setFen(gameCopy.fen());
           setGame(gameCopy);
-          addMessage(`${deepseekResponse.comment}`, "bot", botMove.san);
+          addMessage(`${openRouterResponse.comment}`, "bot", botMove.san);
           checkGameStatus(gameCopy);
         } else {
-          // Se la mossa non è valida, chiedi a Deepseek di riprovare passando l'errore
-          addMessage("Errore: Deepseek ha proposto una mossa non valida. Riprovo...", "system");
-          console.error('[Deepseek] Mossa non valida:', deepseekResponse.move, 'FEN:', gameCopy.fen());
-          await handleDeepseekResponse(playerMoveSan, fen, `Mossa non valida: ${deepseekResponse.move}`);
+          addMessage("Errore: OpenRouter ha proposto una mossa non valida. Riprovo...", "system");
+          await handleOpenRouterResponse(playerMoveSan, fen, `Mossa non valida: ${openRouterResponse.move}`);
         }
       } catch (e) {
         addMessage("Errore nell'applicare la mossa del bot. Riprovo...", "system");
-        console.error('[Deepseek] Eccezione durante gameCopy.move:', e, 'Move:', deepseekResponse.move, 'FEN:', gameCopy.fen());
-        await handleDeepseekResponse(playerMoveSan, fen, `Eccezione: ${e}`);
+        await handleOpenRouterResponse(playerMoveSan, fen, `Eccezione: ${e}`);
       }
     } else {
-      addMessage("Deepseek non ha fornito una mossa o c'è stato un errore API.", "system");
-      console.error('[Deepseek] Nessuna mossa valida ricevuta:', deepseekResponse);
+      addMessage("OpenRouter non ha fornito una mossa o c'è stato un errore API.", "system");
     }
   }
 
@@ -187,7 +185,7 @@ function App() {
       addMessage(`Mossa: ${move.san}`, "user", move.san);
       if (checkGameStatus(gameCopy)) return true;
       if (gameCopy.turn() === 'b') {
-        handleDeepseekResponse(move.san, gameCopy.fen());
+        handleOpenRouterResponse(move.san, gameCopy.fen());
       }
       return true;
     } catch (error) {
@@ -219,14 +217,14 @@ function App() {
   async function handleSendChatMessage() {
     if (!chatInputValue.trim()) return;
     if (!apiKey || apiKey === PLACEHOLDER_API_KEY) {
-      addMessage("API Key di Deepseek non configurata per la chat. Configurala nelle impostazioni (⚙️).", "system");
+      addMessage("API Key di OpenRouter non configurata per la chat. Configurala nelle impostazioni (⚙️).", "system");
       return;
     }
     const userMessageText = chatInputValue.trim();
     addMessage(userMessageText, "user");
     setChatInputValue('');
     setIsBotThinking(true);
-    const chatResponse = await getDeepseekChatResponse(game.fen(), userMessageText, apiKey);
+    const chatResponse = await getOpenRouterChatResponse(game.fen(), userMessageText, apiKey);
     setIsBotThinking(false);
     if (chatResponse) {
       addMessage(chatResponse, "bot");
@@ -345,13 +343,13 @@ function App() {
           <div className="settings-panel">
             <h2>Impostazioni</h2>
             <div className="form-group">
-              <label htmlFor="apiKeyInput">Deepseek API Key:</label>
+              <label htmlFor="apiKeyInput">OpenRouter API Key:</label>
               <input
                 type="password" // Per nascondere l'API Key
                 id="apiKeyInput"
                 value={tempApiKey}
                 onChange={(e) => setTempApiKey(e.target.value)}
-                placeholder="Inserisci la tua API Key"
+                placeholder="Inserisci la tua API Key OpenRouter"
               />
             </div>
             <div className="form-group">
