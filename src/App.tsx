@@ -4,7 +4,7 @@ import { Chess } from 'chess.js';
 import './App.css';
 import './components/SettingsPanel.css'; // Importa il CSS moderno del pannello impostazioni
 import './components/Chat.css'; // Importa lo stile corretto della chat
-import { getOpenRouterMove, getOpenRouterChatResponse, Difficulty } from './deepseekClient';
+import { getOpenRouterMove, getOpenRouterChatResponse, Difficulty } from './openRouterClient';
 
 // ...interfaccia Message...
 interface Message {

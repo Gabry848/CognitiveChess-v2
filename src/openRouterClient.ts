@@ -2,7 +2,6 @@
 
 // ATTENZIONE: Sostituisci 'YOUR_OPENROUTER_API_KEY_HERE' con la tua vera API Key di OpenRouter.
 // ATTENZIONE: Verifica che OPENROUTER_API_URL sia l'endpoint corretto per il modello che intendi utilizzare.
-const OPENROUTER_API_KEY = "YOUR_OPENROUTER_API_KEY_HERE";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"; // Endpoint OpenRouter
 
 export interface OpenRouterResponse {
@@ -97,7 +96,7 @@ ricorda che i pedoni si muovono in avanti e in diagonale per mangiare
           "X-Title": "CognitiveChess"
               },
               body: JSON.stringify({
-          model: "deepseek-chat", // Modello DeepSeek su OpenRouter
+          model: "deepseek/deepseek-chat", // Modello DeepSeek su OpenRouter
         messages: [
           { role: "user", content: prompt },
         ],
